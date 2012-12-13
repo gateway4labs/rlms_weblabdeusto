@@ -10,9 +10,10 @@ Usage
 
 First install the module::
 
-  $ python setup.py install
+  $ pip install git+https://github.com/lms4labs/rlms_weblabdeusto.git
 
 Then add it in the LabManager's ``config.py``::
 
   RLMS = ['weblabdeusto', ... ]
 
+Profit!
