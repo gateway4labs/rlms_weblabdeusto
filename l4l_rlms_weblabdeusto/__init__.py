@@ -105,7 +105,17 @@ FORM_CREATOR = WebLabFormCreator()
 class RLMS(BaseRLMS):
 
     def __init__(self, configuration):
+        """RLMS(configuration) -> instance of BaseRLMS
+        
+        'configuration' is always a JSON-encoded dictionary. 
+        WebLab-Deusto expects to find three arguments:
+        - remote_login
+        - password
+        - base_url
 
+        A valid example of this would be:
+        rlms = RLMS('{ "remote_login" : "weblabfed", "password" : "password", "base_url" : "https://www.weblab.deusto.es/weblab/" }')
+        """
         self.configuration = configuration
 
         config = json.loads(configuration or '{}')
