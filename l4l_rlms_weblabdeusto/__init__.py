@@ -3,6 +3,7 @@
 import sys
 import json
 
+from flask import request
 from flask.ext.wtf import TextField, PasswordField, Required, URL, ValidationError
 
 from labmanager.forms import AddForm, RetrospectiveForm, GenericPermissionForm
@@ -153,7 +154,7 @@ class RLMS(BaseRLMS):
         initial_data = request_payload.get('initial', '{}') or '{}'
 
         reservation_status = client.reserve_experiment(session_id, ExperimentId.parse(laboratory_id), initial_data, consumer_data_str)
-        return "%sclient/federated.html#reservation_id=%s" % (self.base_url, reservation_status.reservation_id.id)
+        return "%sclient/federated.html#reservation_id=%s&back=%s" % (self.base_url, reservation_status.reservation_id.id, request.referrer)
 
     def _retrieve_best_configuration(self, general_configuration_str, particular_configurations):
         max_time     = None
