@@ -7,8 +7,7 @@ from flask import request
 from flask.ext.wtf import TextField, PasswordField, Required, URL, ValidationError
 
 from labmanager.forms import AddForm, RetrospectiveForm, GenericPermissionForm
-from labmanager.data import Laboratory
-from labmanager.rlms import register
+from labmanager.rlms import register, Laboratory
 from labmanager.rlms.base import BaseRLMS, BaseFormCreator
 
 from .weblabdeusto_client import WebLabDeustoClient
