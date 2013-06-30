@@ -3,12 +3,11 @@
 import sys
 import json
 
-from flask import request
+from flask import request, Blueprint
 from flask.ext.wtf import TextField, PasswordField, Required, URL, ValidationError
 
 from labmanager.forms import AddForm, RetrospectiveForm, GenericPermissionForm
-from labmanager.rlms import register, Laboratory
-from labmanager.rlms.base import BaseRLMS, BaseFormCreator
+from labmanager.rlms import register, Laboratory, BaseRLMS, BaseFormCreator, register_blueprint, Capabilities, Versions
 
 from .weblabdeusto_client import WebLabDeustoClient
 from .weblabdeusto_data import ExperimentId
@@ -125,6 +124,12 @@ class RLMS(BaseRLMS):
         if self.login is None or self.password is None or self.base_url is None:
             raise Exception("Laboratory misconfigured: fields missing" )
 
+    def get_version(self):
+        return Versions.VERSION_1
+
+    def get_capabilities(self): 
+        return [ Capabilities.WIDGET ] 
+
     def test(self):
         json.loads(self.configuration)
         # TODO
@@ -140,14 +145,14 @@ class RLMS(BaseRLMS):
             laboratories.append(Laboratory(id, id))
         return laboratories
 
-    def reserve(self, laboratory_id, username, general_configuration_str, particular_configurations, request_payload, user_agent, origin_ip, referer):
+    def reserve(self, laboratory_id, username, general_configuration_str, particular_configurations, request_payload, user_properties, *args, **kwargs):
         client = WebLabDeustoClient(self.base_url)
         session_id = client.login(self.login, self.password)
 
         consumer_data = {
-            "user_agent"    : user_agent,
-            "referer"       : referer,
-            "from_ip"       : origin_ip,
+            "user_agent"    : user_properties['user_agent'],
+            "referer"       : user_properties['referer'],
+            "from_ip"       : user_properties['from_ip'],
             "external_user" : username,
             #     "priority"      : "...", # the lower, the better
             #     "time_allowed"  : 100,   # seconds
@@ -163,7 +168,15 @@ class RLMS(BaseRLMS):
         initial_data = request_payload.get('initial', '{}') or '{}'
 
         reservation_status = client.reserve_experiment(session_id, ExperimentId.parse(laboratory_id), initial_data, consumer_data_str)
-        return "%sclient/federated.html#reservation_id=%s&back=%s" % (self.base_url, reservation_status.reservation_id.id, request.referrer)
+        return {
+            'reservation_id' : reservation_status.reservation_id.id,
+            'load_url' : "%sclient/federated.html#reservation_id=%s&back=%s" % (self.base_url, reservation_status.reservation_id.id, request.referrer)
+        }
+
+    def load_widget(self, reservation_id, widget_name):
+        return {
+            'url' : "%sclient/federated.html#reservation_id=%s&widget=%s&back=%s" % (self.base_url, reservation_id, widget_name, request.referrer)
+        }
 
     def _retrieve_best_configuration(self, general_configuration_str, particular_configurations):
         max_time     = None
@@ -204,4 +217,10 @@ class RLMS(BaseRLMS):
         return consumer_data
 
 
+weblabdeusto_blueprint = Blueprint('weblabdeusto', __name__)
+@weblabdeusto_blueprint.route('/')
+def index():
+    return "This is the index for WebLab-Deusto"
+
 register("WebLab-Deusto", ['4.0', '5.0'], __name__)
+register_blueprint(weblabdeusto_blueprint, '/weblabdeusto')
