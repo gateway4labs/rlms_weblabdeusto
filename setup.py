@@ -14,15 +14,15 @@ classifiers=[
 
 cp_license="MIT"
 
-# TODO: depend on lms4labs
+# TODO: depend on gateway4labs
 
-setup(name='l4l_rlms_weblabdeusto',
+setup(name='g4l_rlms_weblabdeusto',
       version='0.1',
-      description="WebLab-Deusto plug-in in the lms4labs RLMS",
+      description="WebLab-Deusto plug-in in the gateway4labs RLMS",
       classifiers=classifiers,
       author='WebLab-Deusto Team',
       author_email='weblab@deusto.es',
-      url='http://github.com/lms4labs/rlms_weblabdeusto/',
-      packages=['l4l_rlms_weblabdeusto'],
+      url='http://github.com/gateway4labs/rlms_weblabdeusto/',
+      packages=['g4l_rlms_weblabdeusto'],
       license=cp_license,
      )
