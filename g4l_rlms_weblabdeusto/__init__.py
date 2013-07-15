@@ -8,6 +8,7 @@ from flask.ext.wtf import TextField, PasswordField, Required, URL, ValidationErr
 
 from labmanager.forms import AddForm, RetrospectiveForm, GenericPermissionForm
 from labmanager.rlms import register, Laboratory, BaseRLMS, BaseFormCreator, register_blueprint, Capabilities, Versions
+from labmanager import app
 
 from .weblabdeusto_client import WebLabDeustoClient
 from .weblabdeusto_data import ExperimentId
@@ -177,6 +178,11 @@ class RLMS(BaseRLMS):
         return {
             'url' : "%sclient/federated.html#reservation_id=%s&widget=%s&back=%s" % (self.base_url, reservation_id, widget_name, request.referrer)
         }
+
+    def list_widgets(self, laboratory_id):
+        labs = app.config.get('WEBLABDEUSTO_LABS', {})
+        default_widget = dict( name = 'default', description = 'Default widget')
+        return labs.get(laboratory_id, [ default_widget ])
 
     def _retrieve_best_configuration(self, general_configuration_str, particular_configurations):
         max_time     = None
