@@ -146,7 +146,7 @@ class RLMS(BaseRLMS):
             laboratories.append(Laboratory(id, id))
         return laboratories
 
-    def reserve(self, laboratory_id, username, general_configuration_str, particular_configurations, request_payload, user_properties, *args, **kwargs):
+    def reserve(self, laboratory_id, username, institution, general_configuration_str, particular_configurations, request_payload, user_properties, *args, **kwargs):
         client = WebLabDeustoClient(self.base_url)
         session_id = client.login(self.login, self.password)
 
@@ -154,7 +154,7 @@ class RLMS(BaseRLMS):
             "user_agent"    : user_properties['user_agent'],
             "referer"       : user_properties['referer'],
             "from_ip"       : user_properties['from_ip'],
-            "external_user" : username,
+            "external_user" : '%s_%s' % (username, institution),
             #     "priority"      : "...", # the lower, the better
             #     "time_allowed"  : 100,   # seconds
             #     "initialization_in_accounting" :  False,
