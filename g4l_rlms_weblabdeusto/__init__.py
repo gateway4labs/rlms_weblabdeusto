@@ -168,15 +168,24 @@ class RLMS(BaseRLMS):
 
         initial_data = request_payload.get('initial', '{}') or '{}'
 
+        if 'back' in kwargs:
+            back = kwargs['back']
+        else:
+            back = request.referrer
+
         reservation_status = client.reserve_experiment(session_id, ExperimentId.parse(laboratory_id), initial_data, consumer_data_str)
         return {
             'reservation_id' : reservation_status.reservation_id.id,
-            'load_url' : "%sclient/federated.html#reservation_id=%s&back=%s" % (self.base_url, reservation_status.reservation_id.id, request.referrer)
+            'load_url' : "%sclient/federated.html#reservation_id=%s&back=%s" % (self.base_url, reservation_status.reservation_id.id, back)
         }
 
-    def load_widget(self, reservation_id, widget_name):
+    def load_widget(self, reservation_id, widget_name, **kwargs):
+        if 'back' in kwargs:
+            back = kwargs['back']
+        else:
+            back = request.referrer
         return {
-            'url' : "%sclient/federated.html#reservation_id=%s&widget=%s&back=%s" % (self.base_url, reservation_id, widget_name, request.referrer)
+            'url' : "%sclient/federated.html#reservation_id=%s&widget=%s&back=%s" % (self.base_url, reservation_id, widget_name, back)
         }
 
     def list_widgets(self, laboratory_id):
