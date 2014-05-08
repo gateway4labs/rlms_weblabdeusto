@@ -162,6 +162,9 @@ class RLMS(BaseRLMS):
 
         if 'locale' in kwargs:
             consumer_data['locale'] = kwargs['locale']
+            locale_string = "&locale=%s" % kwargs['locale']
+        else:
+            locale_string = ""
 
         best_config = self._retrieve_best_configuration(general_configuration_str, particular_configurations)
 
@@ -179,7 +182,7 @@ class RLMS(BaseRLMS):
         reservation_status = client.reserve_experiment(session_id, ExperimentId.parse(laboratory_id), initial_data, consumer_data_str)
         return {
             'reservation_id' : reservation_status.reservation_id.id,
-            'load_url' : "%sclient/federated.html#reservation_id=%s&back=%s" % (self.base_url, reservation_status.reservation_id.id, back)
+            'load_url' : "%sclient/federated.html#reservation_id=%s&back=%s%s" % (self.base_url, reservation_status.reservation_id.id, back, locale_string)
         }
 
     def load_widget(self, reservation_id, widget_name, **kwargs):
@@ -187,8 +190,14 @@ class RLMS(BaseRLMS):
             back = kwargs['back']
         else:
             back = request.referrer
+
+        if 'locale' in kwargs:
+            locale_string = "&locale=%s" % kwargs['locale']
+        else:
+            locale_string = ""
+
         return {
-            'url' : "%sclient/federated.html#reservation_id=%s&widget=%s&back=%s" % (self.base_url, reservation_id, widget_name, back)
+            'url' : "%sclient/federated.html#reservation_id=%s&widget=%s&back=%s%s" % (self.base_url, reservation_id, widget_name, back, locale_string)
         }
 
     def list_widgets(self, laboratory_id):
