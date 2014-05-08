@@ -160,6 +160,9 @@ class RLMS(BaseRLMS):
             #     "initialization_in_accounting" :  False,
         }
 
+        if 'locale' in kwargs:
+            consumer_data['locale'] = kwargs['locale']
+
         best_config = self._retrieve_best_configuration(general_configuration_str, particular_configurations)
 
         consumer_data.update(best_config)
