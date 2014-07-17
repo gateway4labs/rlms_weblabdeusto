@@ -24,10 +24,13 @@ def get_module(version):
 
 class WebLabDeustoAddForm(AddForm):
 
+    DEFAULT_URL      = 'http://www.weblab.deusto.es/'
+    DEFAULT_LOCATION = 'Bilbao, Spain'
+
     remote_login = TextField("Login",        validators = [Required()])
     password     = PasswordField("Password")
 
-    base_url     = TextField("Base URL",    validators = [Required(), URL() ])
+    base_url     = TextField("Base URL",    validators = [Required(), URL(False) ])
 
     mappings     = TextField("Mappings",     validators = [Required()], default = "{}")
 
@@ -132,9 +135,10 @@ class RLMS(BaseRLMS):
         return [ Capabilities.WIDGET ] 
 
     def test(self):
-        json.loads(self.configuration)
-        # TODO
-        return None
+        try:
+            self.get_laboratories()
+        except Exception as e:
+            return ["Invalid configuration or server is down: %s" % e]
 
     def get_laboratories(self):
         client = WebLabDeustoClient(self.base_url)
