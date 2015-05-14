@@ -2,6 +2,7 @@
 
 import sys
 import json
+import datetime
 
 from flask import request, Blueprint
 from flask.ext.wtf import TextField, PasswordField, Required, URL, ValidationError
@@ -12,15 +13,6 @@ from labmanager import app
 
 from .weblabdeusto_client import WebLabDeustoClient
 from .weblabdeusto_data import ExperimentId
-
-def get_module(version):
-    """get_module(version) -> proper module for that version
-
-    Right now, a single version is supported, so this module itself will be returned.
-    When compatibility is required, we may change this and import different modules.
-    """
-    # TODO: check version
-    return sys.modules[__name__]
 
 class WebLabDeustoAddForm(AddForm):
 
@@ -132,7 +124,7 @@ class RLMS(BaseRLMS):
         return Versions.VERSION_1
 
     def get_capabilities(self): 
-        return [ Capabilities.WIDGET ] 
+        return [ Capabilities.WIDGET, Capabilities.TRANSLATIONS ] 
 
     def test(self):
         try:
@@ -141,6 +133,10 @@ class RLMS(BaseRLMS):
             return ["Invalid configuration or server is down: %s" % e]
 
     def get_laboratories(self):
+        laboratories = WEBLAB_DEUSTO.rlms_cache.get('get_laboratories')
+        if laboratories:
+            return laboratories
+
         client = WebLabDeustoClient(self.base_url)
         session_id = client.login(self.login, self.password)
         experiments = client.list_experiments(session_id)
@@ -148,7 +144,29 @@ class RLMS(BaseRLMS):
         for experiment in experiments:
             id = '%s@%s' % (experiment['experiment']['name'], experiment['experiment']['category']['name'])
             laboratories.append(Laboratory(id, id))
+
+        WEBLAB_DEUSTO.rlms_cache['get_laboratories'] = laboratories
         return laboratories
+
+    def get_translations(self, laboratory_id):
+        translations = WEBLAB_DEUSTO.rlms_cache.get(laboratory_id)
+        if translations:
+            return translations
+
+        experiment_name, category_name = laboratory_id.split('@')
+        translation_url = self.base_url
+        if translation_url.endswith('/'):
+            translation_url += 'web/i18n/'
+        else:
+            translation_url += '/web/i18n/'
+        translation_url += category_name + '/' + experiment_name + '/'
+        translations_r = WEBLAB_DEUSTO.cached_session.get(translation_url)
+        if translations_r.status_code == 404:
+            translations = { 'translations' : {}, 'mails' : {} }
+        else:
+            translations = translations_r.json()
+        WEBLAB_DEUSTO.rlms_cache[laboratory_id] = translations
+        return translations
 
     def reserve(self, laboratory_id, username, institution, general_configuration_str, particular_configurations, request_payload, user_properties, *args, **kwargs):
         client = WebLabDeustoClient(self.base_url)
@@ -248,10 +266,16 @@ class RLMS(BaseRLMS):
         return consumer_data
 
 
+def populate_cache(rlms):
+    rlms.get_translations()
+
+WEBLAB_DEUSTO = register("WebLab-Deusto", ['5.0'], __name__)
+WEBLAB_DEUSTO.add_local_periodic_task('Populating cache', populate_cache, minutes = 55)
+
+
 weblabdeusto_blueprint = Blueprint('weblabdeusto', __name__)
 @weblabdeusto_blueprint.route('/')
 def index():
     return "This is the index for WebLab-Deusto"
 
-register("WebLab-Deusto", ['4.0', '5.0'], __name__)
 register_blueprint(weblabdeusto_blueprint, '/weblabdeusto')
