@@ -267,8 +267,8 @@ class RLMS(BaseRLMS):
 
 
 def populate_cache(rlms):
-    for lab_id in rlms.get_laboratories():
-        rlms.get_translations(lab_id)
+    for laboratory in rlms.get_laboratories():
+        rlms.get_translations(laboratory.laboratory_id)
 
 WEBLAB_DEUSTO = register("WebLab-Deusto", ['5.0'], __name__)
 WEBLAB_DEUSTO.add_local_periodic_task('Populating cache', populate_cache, minutes = 55)
