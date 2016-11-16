@@ -181,6 +181,9 @@ class RLMS(BaseRLMS):
             #     "time_allowed"  : 100,   # seconds
             #     "initialization_in_accounting" :  False,
         }
+        for key in 'group_name', 'group_id', 'user_fullname', 'user_username':
+            if key in user_properties:
+                consumer_data[key] = user_properties[key]
 
         if 'locale' in kwargs:
             consumer_data['locale'] = kwargs['locale']
