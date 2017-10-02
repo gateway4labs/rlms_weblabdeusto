@@ -124,7 +124,7 @@ class RLMS(BaseRLMS):
         return Versions.VERSION_1
 
     def get_capabilities(self): 
-        return [ Capabilities.WIDGET, Capabilities.TRANSLATIONS ] 
+        return [ Capabilities.WIDGET, Capabilities.TRANSLATIONS, Capabilities.CHECK_URLS ]
 
     def test(self):
         try:
@@ -147,6 +147,9 @@ class RLMS(BaseRLMS):
 
         WEBLAB_DEUSTO.rlms_cache['get_laboratories'] = laboratories
         return laboratories
+
+    def get_check_urls(self, laboratory_id):
+        return [ self.base_url ]
 
     def get_translations(self, laboratory_id):
         translations = WEBLAB_DEUSTO.rlms_cache.get(laboratory_id)
