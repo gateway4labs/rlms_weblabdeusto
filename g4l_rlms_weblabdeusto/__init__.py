@@ -210,7 +210,7 @@ class RLMS(BaseRLMS):
         reservation_status = client.reserve_experiment(session_id, ExperimentId.parse(laboratory_id), initial_data, consumer_data_str)
         return {
             'reservation_id' : reservation_status.reservation_id.id,
-            'load_url' : "%sclient/federated.html#reservation_id=%s&back=%s%s" % (self.base_url, reservation_status.reservation_id.id, back, locale_string)
+            'load_url' : "{}federated/?reservation_id={}&back_url={}{}".format(self.base_url, reservation_status.reservation_id.id, back, locale_string)
         }
 
     def load_widget(self, reservation_id, widget_name, **kwargs):
@@ -225,7 +225,7 @@ class RLMS(BaseRLMS):
             locale_string = ""
 
         return {
-            'url' : "%sclient/federated.html#reservation_id=%s&widget=%s&back=%s%s" % (self.base_url, reservation_id, widget_name, back, locale_string)
+            'url' : "{}federated/?reservation_id={}&widget={}&back_url={}{}".format(self.base_url, reservation_id, widget_name, back, locale_string)
         }
 
     def list_widgets(self, laboratory_id):
